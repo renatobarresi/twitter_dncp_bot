@@ -49,6 +49,5 @@ def main():
     else:
         print("Nada para cargar en la base de datos")
     
-
 if __name__ == "__main__":
     main()

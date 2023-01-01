@@ -210,7 +210,6 @@ class licitaciones:
         """
         
         urlAPI = urlAPI + "/proveedores"
-        print(urlAPI)
         listAdjudicados = []
         
         head = {

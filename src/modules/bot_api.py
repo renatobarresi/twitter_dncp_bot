@@ -1,4 +1,21 @@
 import tweepy
+import json
+
+def read_credential(creadentialPath, key):
+    """
+    Reads the file located at `credentialPath` and retrieves the value for `key` from the file.
+    The file is expected to contain a JSON object with the `key` and its corresponding value.
+
+    Parameters:
+    - credentialPath (str): The path to the file containing the credentials.
+    - key (str): The key whose value should be retrieved from the file.
+
+    Returns:
+    - The value associated with the given `key`.
+    """
+    f = open(creadentialPath)
+    data = json.load(f)
+    return data[key]
 
 class twitterBot:
     def __init__(self, consumerKey, consumerSecret, accessToken, accessTokenSecret):

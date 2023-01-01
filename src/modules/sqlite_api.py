@@ -1,7 +1,7 @@
 import sqlite3
 
 class licitacionDataBase:
-    def __init__(self, dbName, tableName, keyValues):
+    def __init__(self, dbName, tableName, keyValues = ""):
         conn = sqlite3.connect(dbName)
         print("Creando la tabla: " + tableName + ", en la base de datos: " + dbName + "...")
         try:
@@ -108,3 +108,70 @@ class licitacionDataBase:
 
         # Return the rows
         return rows
+    
+    def get_first_5_rows(self, db_name, table_name):
+        # Connect to the database
+        conn = sqlite3.connect(db_name)
+
+        # Create a cursor
+        cursor = conn.cursor()
+
+        # Check if the table exists
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';")
+        table_exists = cursor.fetchone()
+
+        if table_exists:
+            # Get the number of rows in the table
+            cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+            row_count = cursor.fetchone()[0]
+
+            # Check if the table is empty
+            if row_count == 0:
+                return False
+            else:
+                # Execute a SELECT statement to retrieve the first 5 rows from the table
+                cursor.execute(f"SELECT * FROM {table_name} LIMIT 5")
+
+                # Fetch the results
+                results = cursor.fetchall()
+
+                # Close the cursor and connection
+                cursor.close()
+                conn.close()
+
+                # Return the results
+                return results
+        else:
+            return False
+
+    def delete_first_5_rows(self, db_name, table_name):
+        # Connect to the database
+        conn = sqlite3.connect(db_name)
+
+        # Create a cursor
+        cursor = conn.cursor()
+
+        # Check if the table exists
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'")
+        if cursor.fetchone() is None:
+            print(f"Error: La tabla '{table_name}' no existe en la base de datos '{db_name}'.")
+            return
+
+        # Get the number of rows in the table
+        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+        row_count = cursor.fetchone()[0]
+
+        # Check if the table is empty
+        if row_count == 0:
+            print(f"Error: La tabla '{table_name}' está vacía.")
+            return
+
+        # Delete the first 5 rows from the table
+        cursor.execute(f"DELETE FROM {table_name} WHERE rowid IN (SELECT rowid FROM {table_name} LIMIT 5)")
+
+        # Commit the transaction
+        conn.commit()
+
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
