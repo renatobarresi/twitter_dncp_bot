@@ -8,6 +8,9 @@ from modules.sqlite_api import licitacionDataBase
 
 dataBaseName = "basicDB.db"
 basicTable = "tablaBasica"
+tablaConvocatoria = "tablaConvocatoria"
+keyValuesColumns_tablaConvocatoria = "ID TEXT, Titulo TEXT, Costo INTEGER, Institucion TEXT, Link TEXT"
+keyValues_tablaConvocatoria = "ID, Titulo, Costo, Institucion, Link"
 keyValuesColumns_V_1 = "ID TEXT, Titulo TEXT, Costo INTEGER, Institucion TEXT, Adjudicados TEXT, Denuncias INTEGER, Link TEXT"
 keyValues_V_1 = "ID, Titulo, Costo, Institucion, Adjudicados, Denuncias, Link"
 credentialsPath = "../credentials/dncp.json"
@@ -31,23 +34,40 @@ def main():
         print("V2: ", accessToken_V2)
 
     #Create licitaciones object and obtain the list of all tenders that changed status to 'ADJ'
-    allTenders = licitaciones("ADJ", CSVLink, accessToken_V2, accessToken_V3)
+    allTenders = licitaciones("ADJ", CSVLink, "reporte.csv", accessToken_V2, accessToken_V3)
     listAllTendersADJ = allTenders.obtain_tenders_list()
     print("Licitaciones ADJ:\r\n", listAllTendersADJ)
 
-    #fill the data base
+    #agregar valores a licitaciones Adjudicadas
     if listAllTendersADJ != []:
         basicDBTenders = licitacionDataBase(dataBaseName, basicTable, keyValuesColumns_V_1)
+        
         for ID in listAllTendersADJ:
             value = allTenders.obtain_values(ID)           
-            ##testDB.insert_values("db2.db", "tabla1", "ID, Titulo, Estado, Costo, Institucion, Adjudicados, Denuncias, Link", (2, "titulo2", "estado3", 12314412, "conacyt", "datasystem", "no", "www.reddit.com"))
-            #value = (value["ID"], "\"" + value["Titulo"] + "\"", value["Costo"],  "\"" + value["Convocante"] + "\"" , "\"" + value["Adjudicados"]  + "\"", value["Protestas"], "\"" +  value["Link"] + "\"" )
             value = (value["ID"], value["Titulo"], value["Costo"], value["Convocante"], value["Adjudicados"], value["Protestas"], value["Link"])
-            print("Agregando a base de datos:\r\n", value)
+            print("Agregando a tabla ADJ:\r\n", value)
             basicDBTenders.insert_values(dataBaseName, basicTable, keyValues_V_1, value)
-        print("BASE DE DATOS\r\n\r\n", basicDBTenders.read_table(db_name=dataBaseName,table_name=basicTable))
+        print("Tabla ADJ\r\n\r\n", basicDBTenders.read_table(db_name=dataBaseName,table_name=basicTable))
     else:
-        print("Nada para cargar en la base de datos")
+        print("Nada para cargar en tabla ADJ")
     
+    #Obtener lista de licitaciones que pasaron a estado de convocatoria
+    tenderConvocatoria = licitaciones("CONV", CSVLink, "reporteCONV.csv", accessToken_V2, accessToken_V3)
+    listTenderConv = tenderConvocatoria.obtain_tenders_list()
+    print("Licitaciones CONV:\r\n", listTenderConv)
+
+    #agregar valores a licitaciones convocadas 
+    if listTenderConv != []:
+        convocatoriaDB = licitacionDataBase(dataBaseName, tablaConvocatoria, keyValuesColumns_tablaConvocatoria)
+
+        for ID in listTenderConv:
+            value = tenderConvocatoria.obtain_values(ID)
+            value = (value["ID"], value["Titulo"], value["Costo"], value["Convocante"], value["Link"])
+            print("Agregando a tabla CONV:\r\n", value)
+            convocatoriaDB.insert_values(dataBaseName, tablaConvocatoria, keyValues_tablaConvocatoria, value)
+        print("Tabla CONV\r\n\r\n", convocatoriaDB.read_table(db_name=dataBaseName,table_name=tablaConvocatoria))
+    else:
+        print("Nada para agregar en tabla CONV")
+
 if __name__ == "__main__":
     main()

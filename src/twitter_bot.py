@@ -12,6 +12,7 @@ from time import sleep
 
 dataBaseName = "basicDB.db"
 basicTable = "tablaBasica"
+tablaConvocatoria = "tablaConvocatoria"
 
 maxCharLimit = 280
 MIN_MONTO_TUITEAR = 25000000 #monto minimo que deben de pasar las licitaciones para que sean tuiteadas
@@ -23,7 +24,7 @@ def format_number(number):
     formatted_number = "{:,}".format(number)
     return formatted_number
 
-def tweet_licitacion_adjudicada(bot, api, item):
+def tweet_licitacion(bot, api, item, status):
     """
     Parses the information in a row of the database and creates three tweets, then tweets them.
     Params:
@@ -35,20 +36,33 @@ def tweet_licitacion_adjudicada(bot, api, item):
     if item[2] < MIN_MONTO_TUITEAR:
         print("Monto de la licitacion bajo: ", format_number(item[2]))
         return False
+    
+    if status == "ADJ":
+        monto = format_number(item[2])
+        ID = item[0]
+        nombre = item[1]
+        institucion = item[3]
+        proveedores = item[4]
+        link = item[6]
 
-    monto = format_number(item[2])
-    ID = item[0]
-    nombre = item[1]
-    institucion = item[3]
-    proveedores = item[4]
-    link = item[6]
+        tweet_1 = "Nombre: " + nombre + ". ID: " + ID + ". Monto[PYG]: " + monto
+        if len(tweet_1) > maxCharLimit:
+            tweet_1 = "ID: " + ID + ". Monto[PYG]: " + monto
+        tweet_2 = "Institucion: " + institucion + ". Proveedor/es: " + proveedores
+        tweet_3 = "URL: " + link	
 
-    tweet_1 = "Nombre: " + nombre + ". ID: " + ID + ". Monto[PYG]: " + monto
-    if len(tweet_1) > maxCharLimit:
-        tweet_1 = "ID: " + ID + ". Monto[PYG]: " + monto
-    tweet_2 = "Institucion: " + institucion + ". Proveedor/es: " + proveedores
-    tweet_3 = "URL: " + link	
-
+    elif status == "CONV":
+        monto = format_number(item[2])
+        ID = item[0]
+        nombre = item[1]
+        institucion = item[3]
+        link = item[4]
+        tweet_1 = "Se lanza convocatoria: " + nombre + ". ID: " + ID + ". Monto[PYG]: " + monto
+        if len(tweet_1) > maxCharLimit:
+            tweet_1 = "Se lanza convocatoria ID: " + ID + ". Monto[PYG]: " + monto
+        tweet_2 = "Institucion: " + institucion
+        tweet_3 = "URL: " + link
+    
     listaTweets = [tweet_1, tweet_2, tweet_3]
 
     id = 0
@@ -60,15 +74,34 @@ def main():
     
     ''' Create db object and read its contents '''
 
-    print("Creando objeto base de datos...")
+    #tabla ADJ
+    print("Leyendo tabla ADJ...")
     db = licitacionDataBase(dataBaseName, basicTable)
     firtsFiveRows = db.get_first_5_rows(dataBaseName, basicTable)
     if firtsFiveRows == False:
         print("Tabla Vacia, no se tuitea")
-        exit(1)
     else:
         print("Las primeras 5 filas son: ")
         print(firtsFiveRows)
+        print("Deleting the first 5 rows of the table ADJ...")
+        db.delete_first_5_rows(dataBaseName, basicTable)
+
+    #tabla CONV
+    print("Leyendo tabla CONV...")
+    db = licitacionDataBase(dataBaseName, tablaConvocatoria)
+    firtsFiveRowsCONV = db.get_first_5_rows(dataBaseName, tablaConvocatoria)
+    if firtsFiveRowsCONV == False:
+        print("Tabla Vacia, no se tuitea")
+    else:
+        print("Las primeras 5 filas son: ")
+        print(firtsFiveRowsCONV)
+        print("Deleting the first 5 rows of the table CONV...")
+        db.delete_first_5_rows(dataBaseName, tablaConvocatoria)
+
+
+    if firtsFiveRows == False and firtsFiveRowsCONV == False:
+        print("Tablas vacias, cerrando programa")
+        exit(1)
 
     ''' Create twitterBot object and authenticate '''
 
@@ -86,15 +119,16 @@ def main():
     twBot = twitterBot(consumerKey, consumerSecret, accessToken, accessTokenSecret)
     api = twBot.oauth()
     
-    ''' Tweet tenders '''
+    ''' Tweet tenders AD '''
 
     for item in firtsFiveRows:
-        tweet_licitacion_adjudicada(twBot, api, item)
+        tweet_licitacion(twBot, api, item, "ADJ")
         sleep(60)
-        
-    ''' Delete firts 5 rows '''
-    print("Deleting the first 5 rows of the table...")
-    db.delete_first_5_rows(dataBaseName, basicTable)
+
+    ''' Tweet tenders CONV'''
+    for item in firtsFiveRowsCONV:
+        tweet_licitacion(twBot, api, item, "CONV")
+        sleep(60)
 
 if __name__ == "__main__":
     main()

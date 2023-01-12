@@ -98,7 +98,7 @@ def download_csv_dncp(url):
     return df
 
 class licitaciones:
-    def __init__(self, estado, link, accessToken_V2, accessToken_V3):
+    def __init__(self, estado, link, nombreCSV, accessToken_V2, accessToken_V3):
         """
         Initializes a licitaciones object with the given category, state, and link.
 
@@ -112,6 +112,7 @@ class licitaciones:
         self.link = link
         self.accessToken_V2 = accessToken_V2
         self.accessToken_V3 = accessToken_V3
+        self.nombreCSV = nombreCSV
 
     def __str__(self):
         """
@@ -130,7 +131,7 @@ class licitaciones:
 
         ''' read base CSV, download if it does not exist '''
         try:
-            baseDF = pandas.read_csv("reporte.csv", on_bad_lines='skip', delimiter = ";")
+            baseDF = pandas.read_csv(self.nombreCSV, on_bad_lines='skip', delimiter = ";")
         except FileNotFoundError:
             print("TENES QUE DESCARGAR PRIMERO EL CSV BASE")
             exit(1)
@@ -150,7 +151,7 @@ class licitaciones:
                         #print(id, licitacionesNew[id])
 
         ''' convertir el updatedDF a reporte.csv '''
-        updatedDF.to_csv("reporte.csv", sep = ";")
+        updatedDF.to_csv(self.nombreCSV, sep = ";")
 
         return listIDs
 
