@@ -1,3 +1,6 @@
 test_code/
 Legacy_code/
-credentials/
+credentials/*
+src/reporte.csv
+src/basicDB.db
+src/modules/__pycache__/*
