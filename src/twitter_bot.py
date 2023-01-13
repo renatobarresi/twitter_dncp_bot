@@ -121,14 +121,16 @@ def main():
     
     ''' Tweet tenders AD '''
 
-    for item in firtsFiveRows:
-        tweet_licitacion(twBot, api, item, "ADJ")
-        sleep(60)
+    if firtsFiveRows != False:
+        for item in firtsFiveRows:
+            tweet_licitacion(twBot, api, item, "ADJ")
+            sleep(60)
 
     ''' Tweet tenders CONV'''
-    for item in firtsFiveRowsCONV:
-        tweet_licitacion(twBot, api, item, "CONV")
-        sleep(60)
+    if firtsFiveRowsCONV != False:
+        for item in firtsFiveRowsCONV:
+            tweet_licitacion(twBot, api, item, "CONV")
+            sleep(60)
 
 if __name__ == "__main__":
     main()
