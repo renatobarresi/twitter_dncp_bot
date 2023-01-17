@@ -43,7 +43,7 @@ def main():
         basicDBTenders = licitacionDataBase(dataBaseName, basicTable, keyValuesColumns_V_1)
         
         for ID in listAllTendersADJ:
-            value = allTenders.obtain_values(ID)           
+            value = allTenders.obtain_values(ID, "ADJ")           
             value = (value["ID"], value["Titulo"], value["Costo"], value["Convocante"], value["Adjudicados"], value["Protestas"], value["Link"])
             print("Agregando a tabla ADJ:\r\n", value)
             basicDBTenders.insert_values(dataBaseName, basicTable, keyValues_V_1, value)
@@ -61,7 +61,7 @@ def main():
         convocatoriaDB = licitacionDataBase(dataBaseName, tablaConvocatoria, keyValuesColumns_tablaConvocatoria)
 
         for ID in listTenderConv:
-            value = tenderConvocatoria.obtain_values(ID)
+            value = tenderConvocatoria.obtain_values(ID, "CONV")
             value = (value["ID"], value["Titulo"], value["Costo"], value["Convocante"], value["Link"])
             print("Agregando a tabla CONV:\r\n", value)
             convocatoriaDB.insert_values(dataBaseName, tablaConvocatoria, keyValues_tablaConvocatoria, value)

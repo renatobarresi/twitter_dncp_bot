@@ -16,6 +16,7 @@ accessTokenURL_V2 = apiV2EndPoint + "oauth/token"   #endporint de la api v2 para
 tenderInfoEndPoint_V3 = apiV3EndPoint + "tender/"   #endpoint de la api V3 para obtener la informacion de la licitacion
 tenderAdjudicadosEndPint_V2 = apiV2EndPoint + "doc/adjudicaciones/" #endpoint de la api v2 para obtener lista de proveedores adjudicados
 linkLicitacionGenerico = "https://www.contrataciones.gov.py/licitaciones/adjudicacion/" #link para generar el url de una licitacion
+linkLicitacionCONV = "https://www.contrataciones.gov.py/licitaciones/convocatoria/"
 
 tenderQuery = "?sections=title%2C%20value%2C%20procuringEntity" #query que se le pasa al endpoint de la api v3 "/tender"
 
@@ -155,13 +156,16 @@ class licitaciones:
 
         return listIDs
 
-    def obtain_values(self, ID):
+    def obtain_values(self, ID, status):
         """
         returns a dictionary with the values corresponding to an individual ID, using the V2 API (Will be deprecated in July of 2023)
         ID: id de la licitacion
         """
 
-        urlLicitacion = linkLicitacionGenerico + ID + "/resumen-adjudicacion.html"
+        if status == "ADJ":
+            urlLicitacion = linkLicitacionGenerico + ID + "/resumen-adjudicacion.html" #link para licitacion adjudicada
+        elif status == "CONV":
+            urlLicitacion = linkLicitacionCONV + ID + ".html"
 
         dicValues = {"ID":"", "Titulo":"", "Costo":0, "Convocante":"", "Adjudicados":[], "Protestas":0, "Link":urlLicitacion}
 
@@ -176,13 +180,14 @@ class licitaciones:
             
         dicValues["ID"] = ID.split("-")[0]
 
-        urlAPI = tenderAdjudicadosEndPint_V2 + ID
-        adjudicados = self.__obtain_api_v2_adjudicados(urlAPI)
-        if adjudicados != False:
-            dicValues["Adjudicados"] = ', '.join(adjudicados)
-        else:
-            print("ERROR obteniendo proveedores por medio de la api V2.")
-            dicValues["Adjudicados"] = " "
+        if status == "ADJ":
+            urlAPI = tenderAdjudicadosEndPint_V2 + ID
+            adjudicados = self.__obtain_api_v2_adjudicados(urlAPI)
+            if adjudicados != False:
+                dicValues["Adjudicados"] = ', '.join(adjudicados)
+            else:
+                print("ERROR obteniendo proveedores por medio de la api V2.")
+                dicValues["Adjudicados"] = " "
         
         return dicValues
 
