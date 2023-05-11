@@ -24,7 +24,7 @@ The architecture is very straight forward, it is a producer-consumer one. The pr
 
 The producer manages one SQL database that contains two tables (for now). One table is used to fill the information on the tenders that were just updated to "ADJ". And the second one does the same but for tenders that were updated to "CONV".
 
-To detect which tenders updated there status, we use a .csv file generated automatically by the DNCP. 
+To detect which tenders updated their status, we use a .csv file generated automatically by the DNCP. 
 
 ## Folder structure
 
