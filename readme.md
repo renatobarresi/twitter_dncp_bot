@@ -50,7 +50,6 @@ To detect which tenders updated there status, we use a .csv file generated autom
 
 ## TODO
 
-- Obtain contractors using DNCP's API V3.
 - Generate python documentation.
 - Improve db_filler.py coupling from twitter_bot.py.
 - Add to licitaciones class a method to obtain the items requested and bought.

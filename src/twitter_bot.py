@@ -24,7 +24,7 @@ def format_number(number):
     formatted_number = "{:,}".format(number)
     return formatted_number
 
-def tweet_licitacion(bot, api, item, status):
+def tweet_licitacion(bot, client, item, status):
     """
     Parses the information in a row of the database and creates three tweets, then tweets them.
     Params:
@@ -68,7 +68,7 @@ def tweet_licitacion(bot, api, item, status):
     id = 0
     for tweet in listaTweets:
         print("Tuiteando: ", tweet)
-        id = bot.tweet(api, tweet, id)
+        id = bot.tweet(client, tweet, id)
 
 def main():
     
@@ -111,25 +111,28 @@ def main():
     consumerSecret = read_credential(credentialPath, "consumer-secret")
     accessToken = read_credential(credentialPath, "access-token")
     accessTokenSecret = read_credential(credentialPath, "access-token-secret")
-
+    bearerToken = read_credential(credentialPath, "bearer-token")
+    
     print("consumerKey", consumerKey)
     print("consumerSecret", consumerSecret)
     print("accessToken", accessToken)
     print("accessTokenSecret", accessTokenSecret)
-    twBot = twitterBot(consumerKey, consumerSecret, accessToken, accessTokenSecret)
-    api = twBot.oauth()
+    print("bearerToken: ", bearerToken)
+
+    twBot = twitterBot(consumerKey, consumerSecret, accessToken, accessTokenSecret, bearerToken)
+    cliente = twBot.oauth()
     
     ''' Tweet tenders AD '''
 
     if firtsFiveRows != False:
         for item in firtsFiveRows:
-            tweet_licitacion(twBot, api, item, "ADJ")
+            tweet_licitacion(twBot, cliente, item, "ADJ")
             sleep(60)
 
     ''' Tweet tenders CONV'''
     if firtsFiveRowsCONV != False:
         for item in firtsFiveRowsCONV:
-            tweet_licitacion(twBot, api, item, "CONV")
+            tweet_licitacion(twBot, cliente, item, "CONV")
             sleep(60)
 
 if __name__ == "__main__":

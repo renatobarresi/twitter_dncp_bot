@@ -15,6 +15,7 @@ accessTokenURL_V3 = apiV3EndPoint + "oauth/token"   #endporint de la api v3 para
 accessTokenURL_V2 = apiV2EndPoint + "oauth/token"   #endporint de la api v2 para obtener el access token
 tenderInfoEndPoint_V3 = apiV3EndPoint + "tender/"   #endpoint de la api V3 para obtener la informacion de la licitacion
 tenderAdjudicadosEndPint_V2 = apiV2EndPoint + "doc/adjudicaciones/" #endpoint de la api v2 para obtener lista de proveedores adjudicados
+tenderAdjudicadosEndPint_V3 = apiV3EndPoint + "doc/adjudicaciones/" #endpoint de la api v3 para obtener lista de proveedores adjudicados
 linkLicitacionGenerico = "https://www.contrataciones.gov.py/licitaciones/adjudicacion/" #link para generar el url de una licitacion
 linkLicitacionCONV = "https://www.contrataciones.gov.py/licitaciones/convocatoria/"
 
@@ -213,6 +214,35 @@ class licitaciones:
             Retorna una lista de los proveedores de una licitacion
             This implementation uses API V2 (will be deprecated in June 2023).
             urlAPI: endpoint de la API v2 mas el parametro del ID de la licitacion  
+        """
+        
+        urlAPI = urlAPI + "/proveedores"
+        listAdjudicados = []
+        
+        head = {
+            "Authorization":"Bearer " + self.accessToken_V2 
+        }
+
+        response = requests.get(urlAPI, headers = head)
+        
+        if response.status_code != 200:
+            print("V2: ", response.request.body)
+            print("V2: ", response.status_code) 
+            return False           
+
+        data = response.json()
+        data = data["@graph"][0]["contrato"]["list"]
+        
+        for item in data:
+            listAdjudicados.append(item["proveedor"]["razon_social"])
+        
+        return listAdjudicados
+    
+    def __obtain_api_v3_adjudicados(self, urlAPI):
+        """
+            Retorna una lista de los proveedores de una licitacion
+            This implementation uses API V3.
+            urlAPI: endpoint de la API v3 mas el parametro del ID de la licitacion  
         """
         
         urlAPI = urlAPI + "/proveedores"

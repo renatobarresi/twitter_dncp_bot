@@ -18,7 +18,7 @@ def read_credential(creadentialPath, key):
     return data[key]
 
 class twitterBot:
-    def __init__(self, consumerKey, consumerSecret, accessToken, accessTokenSecret):
+    def __init__(self, consumerKey, consumerSecret, accessToken, accessTokenSecret, bearerToken):
         """
         Initializes a `twitterBot` object with the given consumer key, consumer secret, access token, and access token secret.
         
@@ -32,6 +32,7 @@ class twitterBot:
         self.consumerSecret = consumerSecret
         self.accessTokenSecret = accessTokenSecret
         self.accessToken = accessToken
+        self.bearerToken = bearerToken
 
     def __str__(self):
         return f"twitterBot object with consumer key {self.consumerKey}, consumer secret {self.consumerSecret}, access token {self.accessToken}, and access token secret {self.accessTokenSecret}"
@@ -42,57 +43,66 @@ class twitterBot:
     '''
     def oauth(self):
         """
-        Returns a pointer to an API object created using the consumer key, consumer secret, access token, and access token secret of the `twitterBot` object.
+        Returns a pointer to a Client object created using the consumer key, consumer secret, access token, and access token secret, as well as the bearer token, of the `twitterBot` object.
         
         Returns:
-        - tweepy.API: The API object.
+        - tweepy.Client: The Client object.
         """
 
         try:
-            auth = tweepy.OAuth1UserHandler(consumer_key = self.consumerKey, 
-            consumer_secret = self.consumerSecret, access_token = self.accessToken, 
-            access_token_secret = self.accessTokenSecret)
+            client = tweepy.Client(
+                bearer_token=self.bearerToken,  # Use the bearer token for app-only authentication
+                consumer_key=self.consumerKey,
+                consumer_secret=self.consumerSecret,
+                access_token=self.accessToken,
+                access_token_secret=self.accessTokenSecret
+            )
             
-            return tweepy.API(auth)
+            return client
 
         except Exception as e:
             print(e)
             return None
 
-    def tweet(self, api, msg, id_rsp):
+    def tweet(self, client, msg, reply_to_id=None, user_auth=True):
         """
-        Tweets the given message using the given API object. If `id_rsp` is not 0, the tweet is a reply to the tweet with the given ID.
+        Tweets the given message using the given Client object. If `reply_to_id` is not None, the tweet is a reply to the tweet with the given ID.
         
         Parameters:
-        - api (tweepy.API): The API object to use for tweeting.
+        - client (tweepy.Client): The Client object to use for tweeting.
         - msg (str): The message to tweet.
-        - id_rsp (int): The ID of the tweet to reply to. If 0, the tweet is not a reply.
+        - reply_to_id (str): The ID of the tweet to reply to. If None, the tweet is not a reply.
+        - user_auth (bool): Whether or not to use OAuth 1.0a User Context to authenticate.
         
         Returns:
         - int: The ID of the last tweet sent.
         """
         
         # Validate input
-        if api is None:
-            print("Error: API object is None")
-            return id_rsp
+        if client is None:
+            print("Error: Client object is None")
+            return reply_to_id
         if len(msg) == 0 or len(msg) > 280:
             print("Error: Invalid tweet message")
-            return id_rsp
-       
+            return reply_to_id
+        
         try:
-            if id_rsp == 0:
-                id_rsp = api.update_status(status = msg).id
-                print("Tuiteado!")
+            # Just Tweet
+            if reply_to_id is None:
+                response = client.create_tweet(text=msg, user_auth=user_auth)
+            # Reply to a tweet
             else:
-                api.update_status(status = msg, in_reply_to_status_id = id_rsp)
-                print("Tuiteado!")
+                response = client.create_tweet(text=msg, in_reply_to_tweet_id=reply_to_id, user_auth=user_auth)
+            
+            reply_to_id = response.data['id']
 
-        except tweepy.TweepError as error:
-            if error.api_code == 187:
-                print("Duplicate message")
-            if error.api_code == 135:
-                print("Timestamp out of bounds")
-            else:
-                print("There was an exception")
-        return id_rsp
+            print("Tweeted!")
+
+        except Exception as error:
+            error_type = type(error).__name__
+            error_message = str(error)
+            print("An exception occurred:")
+            print("Error Type:", error_type)
+            print("Error Message:", error_message)
+            
+        return reply_to_id
