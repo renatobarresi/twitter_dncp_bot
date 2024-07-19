@@ -49,7 +49,7 @@ def main():
         print("Nada para cargar en tabla ADJ")
     
     # Obtener lista de licitaciones que pasaron a estado de convocatoria
-    tenderConvocatoria = licitaciones("CONV", CSVLink, "reporteCONV.csv", accessToken_V2, accessToken_V3)
+    tenderConvocatoria = licitaciones("CONV", CSVLink, "reporteCONV.csv", accessToken_V3)
     listTenderConv = tenderConvocatoria.obtain_tenders_list()
     print("Licitaciones CONV:\r\n", listTenderConv)
 

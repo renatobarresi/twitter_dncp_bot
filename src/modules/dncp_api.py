@@ -87,7 +87,6 @@ def download_csv_dncp(url):
     
     soup = bs(page.content, "html.parser")
     container = soup.find_all("div", {"class":"downloadTool"})
-    print(container)
     link = "https://www.contrataciones.gov.py" + container[0].a['href']
 
     df = pandas.read_csv(link, on_bad_lines='skip', delimiter = ";")
