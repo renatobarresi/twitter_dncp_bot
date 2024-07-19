@@ -3,7 +3,7 @@
     de las licitaciones que cambiaron de estado al estado determinado por el usuario
 """
 
-from modules.dncp_api import download_csv_dncp, licitaciones, obtain_request_token, obtain_access_token_dncp_V2, obtain_access_token_dncp_V3
+from modules.dncp_api import download_csv_dncp, licitaciones, obtain_request_token, obtain_access_token_dncp_V3
 from modules.sqlite_api import licitacionDataBase
 
 dataBaseName = "basicDB.db"
@@ -19,26 +19,23 @@ CSVLink = "https://contrataciones.gov.py/buscador/licitaciones.html?nro_nombre_l
 
 def main():
 
-    #get DNCP's API request token and access token
+    # Get DNCP's API request token and access token
     requestToken = obtain_request_token(credentialsPath)
     accessToken_V3 = obtain_access_token_dncp_V3(requestToken)
-    accessToken_V2 = obtain_access_token_dncp_V2(requestToken)
 
-    if accessToken_V2 == False or accessToken_V3 == False:
+    if accessToken_V3 == False:
         print("ERROR: Unable to obtain access token.")
         print("V3: ", accessToken_V3)
-        print("V2: ", accessToken_V2)
         exit(1)
     else:
         print("V3: ", accessToken_V3)
-        print("V2: ", accessToken_V2)
 
-    #Create licitaciones object and obtain the list of all tenders that changed status to 'ADJ'
-    allTenders = licitaciones("ADJ", CSVLink, "reporte.csv", accessToken_V2, accessToken_V3)
+    # Create licitaciones object and obtain the list of all tenders that changed status to 'ADJ'
+    allTenders = licitaciones("ADJ", CSVLink, "reporte.csv", accessToken_V3)
     listAllTendersADJ = allTenders.obtain_tenders_list()
     print("Licitaciones ADJ:\r\n", listAllTendersADJ)
 
-    #agregar valores a licitaciones Adjudicadas
+    # Agregar valores a licitaciones Adjudicadas
     if listAllTendersADJ != []:
         basicDBTenders = licitacionDataBase(dataBaseName, basicTable, keyValuesColumns_V_1)
         
@@ -51,12 +48,12 @@ def main():
     else:
         print("Nada para cargar en tabla ADJ")
     
-    #Obtener lista de licitaciones que pasaron a estado de convocatoria
+    # Obtener lista de licitaciones que pasaron a estado de convocatoria
     tenderConvocatoria = licitaciones("CONV", CSVLink, "reporteCONV.csv", accessToken_V2, accessToken_V3)
     listTenderConv = tenderConvocatoria.obtain_tenders_list()
     print("Licitaciones CONV:\r\n", listTenderConv)
 
-    #agregar valores a licitaciones convocadas 
+    # Agregar valores a licitaciones convocadas 
     if listTenderConv != []:
         convocatoriaDB = licitacionDataBase(dataBaseName, tablaConvocatoria, keyValuesColumns_tablaConvocatoria)
 
